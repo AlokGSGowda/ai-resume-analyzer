@@ -1,0 +1,72 @@
+
+#root {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+}
+
+body {
+  margin: 0;
+  background: #f3f6fb;
+}
+
+h1 {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+p {
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.upload-card {
+  margin-top: 30px;
+  padding: 30px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+  font-weight: bold;
+}
+
+input[type="file"] {
+  display: block;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+button {
+  padding: 12px 20px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+button:hover {
+  background: #4338ca;
+}
+
+.resume-text {
+  padding: 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 400px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 14px;
+  line-height: 1.6;
+}
