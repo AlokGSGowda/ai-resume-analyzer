@@ -11,7 +11,7 @@ function App() {
   const [message, setMessage] = useState('')
   const [resumeText, setResumeText] = useState('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [analysis, setAnalysis] = useState("");
+  const [analysis, setAnalysis] = useState(null)
 
   const fileInputRef = useRef(null)
 
@@ -21,6 +21,7 @@ function App() {
 
     setResumeText('')
     setMessage('')
+    setAnalysis(null)
 
     if (!selectedFile) {
       setResume(null)
@@ -69,64 +70,67 @@ function App() {
   }
 
   // Analyze the selected PDF
-  
-async function handleAnalyze() {
-  if (!resume) {
-    setMessage("Please upload a resume first.");
-    return;
-  }
-
-  setIsAnalyzing(true);
-  setMessage("Analyzing your resume with AI...");
-  setResumeText("");
-
-  try {
-    const extractedText = await extractPdfText(resume);
-
-    if (!extractedText.trim()) {
-      setMessage(
-        "No readable text found. Please upload a text-based PDF."
-      );
-      return;
+  async function handleAnalyze() {
+    if (!resume) {
+      setMessage('Please upload a resume first.')
+      return
     }
 
-    setResumeText(extractedText);
+    setIsAnalyzing(true)
+    setMessage('Analyzing your resume with AI...')
+    setResumeText('')
+    setAnalysis(null)
 
-    const response = await fetch(
-      "http://localhost:5000/api/analyze",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          resumeText: extractedText,
-        }),
+    try {
+      const extractedText = await extractPdfText(resume)
+
+      if (!extractedText.trim()) {
+        setMessage(
+          'No readable text found. Please upload a text-based PDF.'
+        )
+        return
       }
-    );
 
-    const data = await response.json();
+      setResumeText(extractedText)
 
-    if (!response.ok) {
-      throw new Error(data.error || "Analysis failed.");
+      const response = await fetch(
+        'http://localhost:5000/api/analyze',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            resumeText: extractedText,
+          }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(
+          data.error || 'Resume analysis failed.'
+        )
+      }
+
+      // Store the structured JSON analysis
+      setAnalysis(data.analysis)
+      setMessage('AI resume analysis completed successfully.')
+    } catch (error) {
+      console.error('Resume analysis error:', error)
+      setMessage(error.message || 'Something went wrong.')
+    } finally {
+      setIsAnalyzing(false)
     }
-
-    setMessage("AI resume analysis completed successfully.");
-    setAnalysis(data.analysis);
-  } catch (error) {
-    console.error("Resume analysis error:", error);
-    setMessage(error.message || "Something went wrong.");
-  } finally {
-    setIsAnalyzing(false);
   }
-}
-
 
   // Remove the selected PDF and clear previous results
   function handleRemove() {
     setResume(null)
     setResumeText('')
     setMessage('')
+    setAnalysis(null)
 
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -176,22 +180,111 @@ async function handleAnalyze() {
           onClick={handleAnalyze}
           disabled={isAnalyzing}
         >
-          {isAnalyzing ? 'Reading PDF...' : 'Analyze Resume'}
+          {isAnalyzing ? 'Analyzing...' : 'Analyze Resume'}
         </button>
 
         {message && <p role="status">{message}</p>}
 
+        {/* Extracted Resume Text */}
         {resumeText && (
           <div>
             <h2>Extracted Resume Text</h2>
             <pre className="resume-text">{resumeText}</pre>
           </div>
         )}
+
+        {/* AI Resume Dashboard */}
         {analysis && (
-        <div className="analysis-result">
-          <h2>AI Resume Analysis</h2>
-          <pre>{analysis}</pre>
-        </div>
+          <div className="analysis-result">
+            <h2>AI Resume Analysis</h2>
+
+            {/* Resume Score */}
+            <div className="score-card">
+              <h3>Resume Score</h3>
+
+              <div className="score-number">
+                {analysis.score}
+                <span>/100</span>
+              </div>
+
+              <div className="score-progress">
+                <div
+                  className="score-progress-fill"
+                  style={{
+                    width: `${analysis.score}%`,
+                  }}
+                ></div>
+              </div>
+
+              <p>{analysis.scoreReason}</p>
+            </div>
+            {/* Analysis Overview */}
+            <div className="summary-grid">
+              <div className="summary-card">
+                <h3>{analysis.strengths.length}</h3>
+                <p>Strengths</p>
+              </div>
+
+              <div className="summary-card">
+                <h3>{analysis.weaknesses.length}</h3>
+                <p>Weaknesses</p>
+              </div>
+
+              <div className="summary-card">
+                <h3>{analysis.missingSkills.length}</h3>
+                <p>Missing Skills</p>
+              </div>
+
+              <div className="summary-card">
+                <h3>{analysis.suggestions.length}</h3>
+                <p>Suggestions</p>
+              </div>
+            </div>
+
+            {/* Strengths */}
+            <div className="analysis-section">
+              <h3>Strengths</h3>
+
+              <ul>
+                {analysis.strengths.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Weaknesses */}
+            <div className="analysis-section">
+              <h3>Weaknesses</h3>
+
+              <ul>
+                {analysis.weaknesses.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Missing Skills */}
+            <div className="analysis-section">
+              <h3>Missing Skills</h3>
+
+              <ul>
+                {analysis.missingSkills.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Improvement Suggestions */}
+            <div className="analysis-section">
+              <h3>Improvement Suggestions</h3>
+
+              <ol>
+                {analysis.suggestions.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ol>
+            </div>
+          </div>
         )}
       </div>
     </div>
